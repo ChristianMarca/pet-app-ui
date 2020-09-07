@@ -14,6 +14,25 @@ export interface IUserDataError {
     [key: string]: string;
 }
 
+export interface IUserListPagination {
+    pagination: { [key: string]: number };
+    users: IUserData[];
+}
+
+export const getAllUsers = (pageNumber: number, pageSize: number): Promise<IUserListPagination | IUserDataError> => {
+    const authorization = window.localStorage.getItem('token') || '';
+    return fetch(`${baseUrl}/users/?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            authorization,
+        },
+    })
+        .then((resp) => resp.json())
+        .catch((err) => err);
+};
+
 export const getUserByUserName = (username: string): Promise<IUserData | IUserDataError> => {
     const authorization = window.localStorage.getItem('token') || '';
     return fetch(`${baseUrl}/users/usernames/${username}`, {
@@ -62,6 +81,7 @@ export const loginUser = (
     password?: string | undefined,
 ): Promise<IUserData | IUserDataError> => {
     let authorization = null;
+
     if (!email || !password) {
         authorization = window.localStorage.getItem('token');
     }
@@ -102,4 +122,18 @@ export const logoutUser = (): Promise<IUserData | IUserDataError> => {
         .finally(() => {
             window.localStorage.clear();
         });
+};
+
+export const deleteUserByUserId = (userId: string): Promise<{ [key: string]: string }> => {
+    const authorization = window.localStorage.getItem('token') || '';
+    return fetch(`${baseUrl}/users/${userId}`, {
+        method: 'DELETE',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            authorization,
+        },
+    })
+        .then((resp) => resp.json())
+        .catch((err) => err);
 };

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { IUserData, IUserDataError } from '../../services/user.api';
+import { IUserData, IUserDataError, IUserListPagination } from '../../services/user.api';
 import Input from '../input/input';
 import Card from '../card/card';
 import { IRoute, Routers } from '../../containers/routers';
 import FormField from '../form.field/form.field';
 import { validateUser } from '../../utils/user.utils';
+import UserList from '../users.items/users.list';
 
 interface IUser extends IRoute {
     loginService: () => Promise<IUserData | IUserDataError>;
@@ -13,9 +14,20 @@ interface IUser extends IRoute {
         userData: Partial<Omit<IUserData, 'email' | 'userId' | 'createdAt' | 'updatedAt'>>,
         userId: string,
     ) => Promise<IUserData | IUserDataError>;
+    getUsersService: (pageNumber: number, pageSize: number) => Promise<IUserListPagination | IUserDataError>;
+    deleteUserByIdService: (userId: string) => Promise<{ [key: string]: string }>;
+    logoutService: () => Promise<void>;
 }
 
-function User({ redirect, loginService, getUserDataByUserIdService, updateUserService }: IUser): React.ReactElement {
+function User({
+    redirect,
+    loginService,
+    getUserDataByUserIdService,
+    updateUserService,
+    getUsersService,
+    deleteUserByIdService,
+    logoutService,
+}: IUser): React.ReactElement {
     const [userData, setUserData] = useState<Partial<IUserData>>({});
     const [usernameInput, setUsernameInput] = useState<string>('');
     const [formData, setFormData] = useState<Partial<IUserData>>({});
@@ -67,6 +79,20 @@ function User({ redirect, loginService, getUserDataByUserIdService, updateUserSe
         setFormData(newUserChange);
     };
 
+    const handleDeleteUser = () => {
+        const confirmDeletion = window.confirm(`Are you sure to delete the account username: ${userData.username}`);
+        if (confirmDeletion) {
+            deleteUserByIdService(userData.userId || '')
+                .then(() => logoutService())
+                .then(() => {
+                    console.log('lOG OUT');
+                })
+                .catch(() => {
+                    alert("Couldn't delete user");
+                });
+        }
+    };
+
     const getUserDataForm = () => {
         const { name, lastName, username } = formData;
         const usernameConfig = { title: 'Username', placeHolder: 'crmg', type: 'text', required: true };
@@ -101,11 +127,12 @@ function User({ redirect, loginService, getUserDataByUserIdService, updateUserSe
                         currentValue: lastName,
                         testId: 'update.user.form.lastName',
                         id: 'grid-first-lastName.update',
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChangeData(event, 'lasName'),
+                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChangeData(event, 'lastName'),
                     }}
                     containerClassName="w-full md:w-1/2 px-3 mb-6 md:mb-0"
                 />
                 <button
+                    data-testid="update.user.form.button"
                     onClick={onUserUpdateSubmit}
                     className="my-4 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
                 >
@@ -116,11 +143,21 @@ function User({ redirect, loginService, getUserDataByUserIdService, updateUserSe
     };
 
     return (
-        <div className="flex flex-col items-center justify-center" data-testid="user.container">
+        <div className="flex flex-col items-center justify-center h-auto" data-testid="user.container">
+            <div className="absolute m-8 top-0 left-0">
+                <button
+                    data-testid="user.delete.button"
+                    className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded"
+                    onClick={handleDeleteUser}
+                >
+                    Delete Account
+                </button>
+            </div>
             <div className="bg-gray-200 rounded p-4 m-4">
                 <Input title="User" id="input.user" buttonText="find" placeHolder="Username" action={onUserSubmit} />
                 <Card title={userData.username || ''} body={getUserDataForm()} />
             </div>
+            <UserList getUsersService={getUsersService} />
         </div>
     );
 }
