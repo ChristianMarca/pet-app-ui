@@ -101,7 +101,7 @@ function Login({ redirect, loginService }: ILoginUser): React.ReactElement {
                         >
                             Sign In
                         </button>
-                        <button onClick={handleSignUp}>Sign UP</button>
+                        <button id="signup-button" onClick={handleSignUp}>Sign UP</button>
                     </div>
                 </form>
                 <p className="text-center text-gray-500 text-xs">&copy;Footer example :)</p>

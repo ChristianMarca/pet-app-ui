@@ -11,12 +11,9 @@ function MainLayout(props: Props) {
                 position: 'absolute',
                 margin: 'auto',
                 width: '100vw',
-                height: '100vh',
+                height: 'auto',
                 padding: '5%',
                 justifyContent: 'center',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
                 display: 'flex',
                 flexDirection: 'column',
             }}
