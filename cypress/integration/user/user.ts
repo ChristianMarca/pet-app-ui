@@ -1,39 +1,25 @@
-/// <reference types="cypress" />
+// <reference path="../../support/index.d.ts" />
 import faker from 'faker';
+import ResolvedConfigOptions = Cypress.ResolvedConfigOptions;
 
-context('Sign up page and login', () => {
+context('User page', () => {
     beforeEach(() => {
-        cy.visit(Cypress.config().baseUrl);
+        const config: ResolvedConfigOptions = Cypress.config();
+        cy.visit(config.baseUrl || '');
     });
 
     it('should signup a new user, login view the user data, update user data and delete the account', () => {
-        const email = faker.internet.email();
-        const username = faker.internet.userName();
-        const signup = cy
-            .get('#signup-button')
-            .click()
-            .get('[data-testid="create.user.form.name.input"]')
-            .type(faker.name.firstName())
-            .get('[data-testid="create.user.form.lastName.input"]')
-            .type(faker.name.lastName())
-            .get('[data-testid="create.user.form.username.input"]')
-            .type(username)
-            .get('[data-testid="create.user.form.email.input"]')
-            .type(email)
-            .get('[data-testid="create.user.form.password.input"]')
-            .type(Cypress.env('USER_PASSWORD'))
-            .get('[data-testid="create.user.form.submit.button"]')
-            .click();
+        const email: string = faker.internet.email();
+        const username: string = faker.internet.userName();
+        const getUser: Cypress.Chainable<JQuery<HTMLElement>> = cy.createAndOpenUser({
+            name: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            username: username,
+            email: email,
+            password: <string>Cypress.env('USER_PASSWORD'),
+        });
 
-        const login = signup
-            .get('[data-testid="login.user.form.email.input"]')
-            .type(email)
-            .get('[data-testid="login.user.form.password.input"]')
-            .type(Cypress.env('USER_PASSWORD'))
-            .get('[data-testid="login.user.button"]')
-            .click();
-
-        const findNotValidUsername = login
+        const findNotValidUsername: Cypress.Chainable<JQuery<HTMLElement>> = getUser
             .get('[data-testid="card.title"]')
             .contains(username)
             .get('[data-testid="input.input"]')
@@ -43,7 +29,7 @@ context('Sign up page and login', () => {
             .get('[data-testid="card.title"]')
             .should('be.empty');
 
-        const findValidUsername = login
+        const findValidUsername: Cypress.Chainable<JQuery<HTMLElement>> = getUser
             .get('[data-testid="input.input"]')
             .clear()
             .type(username)
@@ -52,11 +38,11 @@ context('Sign up page and login', () => {
             .get('[data-testid="card.title"]')
             .contains(username);
 
-        const newName = faker.name.firstName();
-        const newLastName = faker.name.lastName();
-        const newUsername = faker.internet.userName();
+        const newName: string = faker.name.firstName();
+        const newLastName: string = faker.name.lastName();
+        const newUsername: string = faker.internet.userName();
 
-        const editUser = login
+        const editUser: Cypress.Chainable<JQuery<HTMLElement>> = getUser
             .get('[data-testid="update.user.form.username.input"]')
             .clear()
             .type(newUsername)
@@ -75,7 +61,7 @@ context('Sign up page and login', () => {
             .get('[data-testid="update.user.form.lastName.input"]')
             .should('have.value', newLastName);
 
-        const deleteUser = editUser
+        const deleteUser: Cypress.Chainable<JQuery<HTMLElement>> = editUser
             .get('[data-testid="user.delete.button"]')
             .click()
             .get('#signup-button')
@@ -84,11 +70,11 @@ context('Sign up page and login', () => {
         const stub = cy.stub();
         cy.on('window:alert', stub);
 
-        const deletedUserLogin = cy
+        const deletedUserLogin: Cypress.Chainable<JQuery<HTMLElement>> = cy
             .get('[data-testid="login.user.form.email.input"]')
             .type(email)
             .get('[data-testid="login.user.form.password.input"]')
-            .type(Cypress.env('USER_PASSWORD'))
+            .type(<string>Cypress.env('USER_PASSWORD'))
             .get('[data-testid="login.user.button"]')
             .click()
             .then(() => {
@@ -97,33 +83,18 @@ context('Sign up page and login', () => {
     });
 
     it('should signup a new user, login, view user pagination and logout', () => {
-        const email = faker.internet.email();
-        const username = faker.internet.userName();
-        const signup = cy
-            .get('#signup-button')
-            .click()
-            .get('[data-testid="create.user.form.name.input"]')
-            .type(faker.name.firstName())
-            .get('[data-testid="create.user.form.lastName.input"]')
-            .type(faker.name.lastName())
-            .get('[data-testid="create.user.form.username.input"]')
-            .type(username)
-            .get('[data-testid="create.user.form.email.input"]')
-            .type(email)
-            .get('[data-testid="create.user.form.password.input"]')
-            .type(Cypress.env('USER_PASSWORD'))
-            .get('[data-testid="create.user.form.submit.button"]')
-            .click();
+        const email: string = faker.internet.email();
+        const username: string = faker.internet.userName();
 
-        const login = signup
-            .get('[data-testid="login.user.form.email.input"]')
-            .type(email)
-            .get('[data-testid="login.user.form.password.input"]')
-            .type(Cypress.env('USER_PASSWORD'))
-            .get('[data-testid="login.user.button"]')
-            .click();
+        const getUser: Cypress.Chainable<JQuery<HTMLElement>> = cy.createAndOpenUser({
+            name: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            username: username,
+            email: email,
+            password: <string>Cypress.env('USER_PASSWORD'),
+        });
 
-        const assertPaginationData = login
+        const assertPaginationData = getUser
             .get('[data-testid="user.list.view.start.pagination"]')
             .contains('1')
             .get('[data-testid="user.list.view.total.pagination"]')
@@ -150,8 +121,7 @@ context('Sign up page and login', () => {
                 const totalPages = parseInt($totalPages.text());
                 for (let i = 1; i <= totalPages; i++) {
                     if (currentCounter === totalPages) {
-                        cy.get('[data-testid="user.list.view.page.number.pagination"]')
-                            .contains(totalPages.toString());
+                        cy.get('[data-testid="user.list.view.page.number.pagination"]').contains(totalPages.toString());
                     } else {
                         cy.get('[data-testid="user.list.view.page.next.page"]').click();
                     }

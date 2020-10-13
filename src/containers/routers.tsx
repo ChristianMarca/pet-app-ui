@@ -2,20 +2,27 @@ import React, { useState } from 'react';
 import User from '../components/user/user';
 import Login from '../components/login/login';
 import SignUp from '../components/signup/signup';
+import Post from '../components/post/post';
 import {
     logoutUser,
     loginUser,
     getUserByUserName,
+    getFollowedUsers,
     createUser,
     updateUser,
     getAllUsers,
     deleteUserByUserId,
+    deleteFollowRelationship,
+    followUser
 } from '../services/user.api';
+
+import { createPost, getAllPosts, updatePost, deletePostById } from '../services/posts.api';
 
 export enum Routers {
     LOGIN = 'LOGIN',
     SIGN_UP = 'SIGN_UP',
     USER_PAGE = 'USER_PAGE',
+    POSTS = 'POSTS',
 }
 
 interface IPages {
@@ -48,6 +55,19 @@ function Router(): React.ReactElement {
                 getUsersService={getAllUsers}
                 deleteUserByIdService={deleteUserByUserId}
                 logoutService={handleLogout}
+                getFollowedUsersService={getFollowedUsers}
+                createUserRelationshipService={followUser}
+                removeUserRelationshipService={deleteFollowRelationship}
+            />
+        ),
+        [Routers.POSTS]: (
+            <Post
+                redirect={redirect}
+                createPostService={createPost}
+                getPostsService={getAllPosts}
+                updatePostsService={updatePost}
+                loginService={loginUser}
+                deletePost={deletePostById}
             />
         ),
         [Routers.LOGIN]: <Login redirect={redirect} loginService={loginUser} />,

@@ -1,10 +1,10 @@
 import React from 'react';
 import { IRoute, Routers } from '../../containers/routers';
 import CreateUserForm from '../createUser.form/createUser.form';
-import { IUserData, IUserDataError } from '../../services/user.api';
+import { IUserData, IFetchDataError } from '../../services/user.api';
 
 interface ICreateUser extends IRoute {
-    createUserService: (userData: IUserData) => Promise<IUserData | IUserDataError>;
+    createUserService: (userData: IUserData) => Promise<IUserData | IFetchDataError>;
 }
 
 function SignUp({ redirect, createUserService }: ICreateUser): React.ReactElement {

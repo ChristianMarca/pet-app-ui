@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { IRoute, Routers } from '../../containers/routers';
-import { IUserData, IUserDataError } from '../../services/user.api';
+import { IUserData, IFetchDataError } from '../../services/user.api';
 
 interface ILoginUser extends IRoute {
-    loginService: (email?: string, password?: string) => Promise<IUserData | IUserDataError>;
+    loginService: (email?: string, password?: string) => Promise<IUserData | IFetchDataError>;
 }
 
 function Login({ redirect, loginService }: ILoginUser): React.ReactElement {

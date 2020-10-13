@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import { IUserDataError } from '../../../services/user.api';
+import {IFetchDataError, IUserRelationship} from '../../../services/user.api';
 import { IUserData, IUserListPagination } from '../../../services/user.api';
 
 import User from '../user';
@@ -23,7 +23,8 @@ test('Search user data and fill the component', async () => {
     const username = 'Fake username';
     const name = 'Fake name';
     const lastName = 'Fake last name';
-    const userId = '1';
+    const userId = 1;
+    const otherUserId = 2;
 
     const newName = 'New name'
 
@@ -65,7 +66,7 @@ test('Search user data and fill the component', async () => {
                         username: username,
                         name: name,
                         lastName: lastName,
-                        userId: userId,
+                        userId: userId.toString(),
                     }
                 ]
             });
@@ -90,10 +91,43 @@ test('Search user data and fill the component', async () => {
                 username: username,
                 name: newName,
                 lastName: lastName,
-                userId: userId,
+                userId: userId.toString(),
             };
             return Promise.resolve(resolveData);
         },
+    );
+
+    const getFollowedUsersService = jest.fn(
+        (): Promise<IUserRelationship[]> => {
+            const resolveData: IUserRelationship = {
+                linkId: 1,
+                userId: userId,
+                followedUserId: otherUserId,
+                subscriber: {
+                    username: username,
+                    name: newName,
+                    lastName: lastName,
+                    userId: userId.toString(),
+                }
+            };
+            return Promise.resolve([resolveData]);
+        },
+    );
+
+    const createUserRelationshipService = jest.fn(
+        (): Promise<IUserRelationship> => {
+            const resolveData: IUserRelationship = {
+                linkId: 1,
+                userId: userId,
+                followedUserId: otherUserId
+            };
+            return Promise.resolve(resolveData);
+        },
+    );
+
+    const removeUserRelationshipService = jest.fn((): Promise<{[key: string]: any}> => {
+            return Promise.resolve({ msg: 'deleted' });
+        }
     );
 
     const { getByTestId } = render(
@@ -105,6 +139,9 @@ test('Search user data and fill the component', async () => {
             deleteUserByIdService={deleteUserByIdService}
             logoutService={logoutService}
             updateUserService={updateUserService}
+            getFollowedUsersService={getFollowedUsersService}
+            createUserRelationshipService={createUserRelationshipService}
+            removeUserRelationshipService={removeUserRelationshipService}
         />,
     );
 
@@ -146,19 +183,19 @@ test('Search user data fail', async () => {
     );
 
     const getUserByUserNameService = jest.fn(
-        (): Promise<IUserDataError> => {
+        (): Promise<IFetchDataError> => {
             return Promise.reject({ msg: 'Error endpoint' });
         },
     );
 
     const getUsersService = jest.fn(
-        (): Promise<IUserDataError> => {
+        (): Promise<IFetchDataError> => {
             return Promise.reject({ msg: 'Error endpoint' });
         },
     );
 
     const deleteUserByIdService = jest.fn(
-        (): Promise<IUserDataError> => {
+        (): Promise<IFetchDataError> => {
             return Promise.reject({ msg: 'Error endpoint' });
         },
     );
@@ -175,6 +212,18 @@ test('Search user data fail', async () => {
         },
     );
 
+    const getFollowedUsersService = jest.fn((): Promise<IFetchDataError> => {
+        return Promise.reject({ msg: 'Error endpoint' })
+    })
+
+    const createUserRelationshipService = jest.fn((): Promise<IFetchDataError> => {
+        return Promise.reject({ msg: 'Error endpoint' })
+    })
+
+    const removeUserRelationshipService = jest.fn((): Promise<IFetchDataError> => {
+        return Promise.reject({ msg: 'Error endpoint' })
+    })
+
     const { getByTestId } = render(
         <User
             redirect={() => undefined}
@@ -184,6 +233,9 @@ test('Search user data fail', async () => {
             deleteUserByIdService={deleteUserByIdService}
             logoutService={logoutService}
             updateUserService={updateUserService}
+            getFollowedUsersService={getFollowedUsersService}
+            createUserRelationshipService={createUserRelationshipService}
+            removeUserRelationshipService={deleteUserByIdService}
         />,
     );
 

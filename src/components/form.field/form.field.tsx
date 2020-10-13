@@ -5,7 +5,7 @@ const BASE_CLASS_NAME = 'w-full md:w-1/2 px-3';
 
 interface Props {
     attributes: FormFields;
-    containerClassName: string;
+    containerClassName?: string;
 }
 
 function FormField({ attributes, containerClassName = BASE_CLASS_NAME }: Props): React.ReactElement {

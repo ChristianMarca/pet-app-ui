@@ -1,5 +1,5 @@
 // ***********************************************************
-// This example support/index.js is processed and
+// This example support/index.d.ts is processed and
 // loaded automatically before your test files.
 //
 // This is a great place to put global configuration and
@@ -13,8 +13,16 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
+// Import commands.d.ts using ES2015 syntax:
 import './commands';
+import { IUser, ILogin } from "./index";
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+/// <reference types="cypress" />
+
+declare namespace Cypress {
+    interface Chainable {
+        singup(userData:IUser): Chainable<Element>
+        login(loginData:ILoginS): Chainable<Element>
+        createAndOpenUser(userData:IUser): Chainable<Element>
+    }
+}

@@ -1,22 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { IUserData, IUserDataError, IUserListPagination } from '../../services/user.api';
+import {
+    IFetchDataError,
+    IUserData,
+    IUserListPagination,
+    IUserRelationship,
+    IUserRelationshipListPagination,
+} from '../../services/user.api';
 import Input from '../input/input';
 import Card from '../card/card';
 import { IRoute, Routers } from '../../containers/routers';
 import FormField from '../form.field/form.field';
 import { validateUser } from '../../utils/user.utils';
 import UserList from '../users.items/users.list';
+import ToggleButton from '../toggle.button/toggle.button';
 
 interface IUser extends IRoute {
-    loginService: () => Promise<IUserData | IUserDataError>;
-    getUserDataByUserIdService: (username: string) => Promise<IUserData | IUserDataError>;
+    loginService: () => Promise<IUserData | IFetchDataError>;
+    getUserDataByUserIdService: (username: string) => Promise<IUserData | IFetchDataError>;
     updateUserService: (
         userData: Partial<Omit<IUserData, 'email' | 'userId' | 'createdAt' | 'updatedAt'>>,
         userId: string,
-    ) => Promise<IUserData | IUserDataError>;
-    getUsersService: (pageNumber: number, pageSize: number) => Promise<IUserListPagination | IUserDataError>;
+    ) => Promise<IUserData | IFetchDataError>;
+    getUsersService: (pageNumber: number, pageSize: number) => Promise<IUserListPagination | IFetchDataError>;
     deleteUserByIdService: (userId: string) => Promise<{ [key: string]: string }>;
     logoutService: () => Promise<void>;
+    getFollowedUsersService: (
+        userId: number,
+        pageNumber: number,
+        pageSize: number,
+    ) => Promise<IUserRelationshipListPagination | IFetchDataError | IUserRelationship[]>;
+    createUserRelationshipService: (userId: number, followedUserId: number) => Promise<IUserRelationship>;
+    removeUserRelationshipService: (relationshipId: number) => Promise<{ [key: string]: string }>;
 }
 
 function User({
@@ -27,10 +41,14 @@ function User({
     getUsersService,
     deleteUserByIdService,
     logoutService,
+    getFollowedUsersService,
+    createUserRelationshipService,
+    removeUserRelationshipService,
 }: IUser): React.ReactElement {
     const [userData, setUserData] = useState<Partial<IUserData>>({});
     const [usernameInput, setUsernameInput] = useState<string>('');
     const [formData, setFormData] = useState<Partial<IUserData>>({});
+    const [onlyFollowingUsers, setOnlyFollowingUsers] = useState<boolean>(false);
 
     useEffect(() => {
         loginService()
@@ -91,6 +109,14 @@ function User({
                     alert("Couldn't delete user");
                 });
         }
+    };
+
+    const goPostHandler = () => {
+        redirect(Routers.POSTS);
+    };
+
+    const onToggleHandler = (currentState: boolean) => {
+        setOnlyFollowingUsers(currentState);
     };
 
     const getUserDataForm = () => {
@@ -157,7 +183,24 @@ function User({
                 <Input title="User" id="input.user" buttonText="find" placeHolder="Username" action={onUserSubmit} />
                 <Card title={userData.username || ''} body={getUserDataForm()} />
             </div>
-            <UserList getUsersService={getUsersService} />
+            <div className="flex flex-col">
+                <ToggleButton onToggleAction={onToggleHandler} title="Show following users" testId="user.following" />
+                <UserList
+                    getUsersService={getUsersService}
+                    currentUserLogged={parseInt(userData.userId || 'Infinity', 10)}
+                    getFollowedUsers={getFollowedUsersService}
+                    createUserRelationshipService={createUserRelationshipService}
+                    removeUserRelationshipService={removeUserRelationshipService}
+                    filterByFollowing={onlyFollowingUsers}
+                />
+            </div>
+            <button
+                onClick={goPostHandler}
+                className="underline border-2 rounded hover:bg-gray-200 p-1 m-4"
+                data-testid="route.posts.button"
+            >
+                View posts
+            </button>
         </div>
     );
 }
